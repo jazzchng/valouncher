@@ -9,22 +9,31 @@ import pyautogui
 import pywinauto
 from pywinauto import Desktop
 import sys
+import ctypes
 
 # Set the root directory path
 root_directory = os.path.dirname(os.path.abspath(__file__))
 loop = 0
 
 print(120*"=")
-print("Welcome to Valouncher v1.0!")
-print("Created and maintained by Jazz Chng (KissTheFloor)")
-print("")
-print("==========")
-print("DISCLAIMER")
-print("==========")
-print("This is a simple Valorant Launcher that stores your username and password in a accounts.cfg file")
-print("Passwords are NOT ENCRYPTED! USE AT YOUR OWN RISK!!")
-print("")
-print("Open source on GitHub: https://github.com/jazzchng/valouncher/")
+header = '''
+Welcome to Valouncher!
+Version: 1.0
+By Jazz Chng
+
+==========
+DISCLAIMER
+==========
+This is a simple Valorant Launcher that stores your username and password in an accounts.cfg file.
+Passwords are stored on your local drive and NOT ENCRYPTED! USE AT YOUR OWN RISK!!
+I will not be held liable for any account lost with the usage of valouncher.
+Always use 2FA on your account! :D
+
+Open source on GitHub: https://github.com/jazzchng/valouncher/
+
+'''
+
+print(header)
 print(120*"=")
 # Functions
 def create_config_file():
@@ -190,10 +199,23 @@ def wait_for_window(window_title, timeout=60):
 def clear_console():
     os.system('cls' if os.name == 'nt' else 'clear')
 
+# Set the console window size
+def set_console_window_size(width, height):
+    try:
+        # Get the handle of the console window
+        console_handle = ctypes.windll.kernel32.GetConsoleWindow()
+
+        # Set the console window size
+        ctypes.windll.kernel32.SetWindowPos(console_handle, 0, 0, 0, width, height, 0x0002 | 0x0040)
+    except Exception as e:
+        print('An error occurred while setting the console window size:', str(e))
+
 # Main loop
 while True:
     if loop == 0:
+        print(40*"=")
         print("How may I help you today? :D")
+        print(40*"=")
     else:
         print("What can I do for you next? :D")
     print("1. Launch Account")
