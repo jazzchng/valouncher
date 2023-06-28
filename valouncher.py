@@ -12,10 +12,20 @@ import sys
 
 # Set the root directory path
 root_directory = os.path.dirname(os.path.abspath(__file__))
+loop = 0
 
-print("Welcome to Valouncher!")
-print("Created and mainted by ")
-
+print(120*"=")
+print("Welcome to Valouncher v1.0!")
+print("Created and maintained by Jazz Chng (KissTheFloor)")
+print("")
+print("==========")
+print("DISCLAIMER")
+print("==========")
+print("This is a simple Valorant Launcher that stores your username and password in a accounts.cfg file")
+print("Passwords are NOT ENCRYPTED! USE AT YOUR OWN RISK!!")
+print("")
+print("Open source on GitHub: https://github.com/jazzchng/valouncher/")
+print(120*"=")
 # Functions
 def create_config_file():
     config = configparser.ConfigParser()
@@ -43,13 +53,19 @@ def store_account():
     with open(config_file_path, 'w') as config_file:
         config.write(config_file)
     
+    clear_console()
+    print(40*"=")
     print("Account stored successfully!")
+    print(40*"=")
 
 def launch_account():
     config_file_path = os.path.join(root_directory, 'accounts.cfg')
 
     if not os.path.isfile(config_file_path):
+        clear_console()
+        print(40*"=")
         print("No accounts found. Please add an account.")
+        print(40*"=")
         return
 
     config = configparser.ConfigParser()
@@ -57,7 +73,10 @@ def launch_account():
 
     account_count = len(config.sections())
     if account_count == 0:
+        clear_console()
+        print(40*"=")
         print("No accounts found. Please add an account.")
+        print(40*"=")
         return
 
     print("Stored accounts:")
@@ -102,23 +121,38 @@ def launch_account():
 
                             sys.exit()
                     except Exception as e:
+                        clear_console()
+                        print(40*"=")
                         print('Exception as e')
+                        print(40*"=")
                         pass
 
             else:
                 # Timeout occurred, handle the situation accordingly
+                clear_console()
+                print(40*"=")
                 print("Timeout: [Riot Client Main] window not found.")
+                print(40*"=")
                 return
         else:
+            clear_console()
+            print(40*"=")
             print("Invalid account number.")
+            print(40*"=")
     except ValueError:
+        clear_console()
+        print(40*"=")
         print("Invalid input. Please enter a number.")
+        print(40*"=")
 
 def view_accounts():
     config_file_path = os.path.join(root_directory, 'accounts.cfg')
 
     if not os.path.isfile(config_file_path):
+        clear_console()
+        print(40*"=")
         print("No accounts found.")
+        print(40*"=")
         return
 
     config = configparser.ConfigParser()
@@ -126,16 +160,23 @@ def view_accounts():
 
     account_count = len(config.sections())
     if account_count == 0:
+        clear_console()
+        print(40*"=")
         print("No accounts found.")
+        print(40*"=")
         return
 
+    clear_console()
+    print(40*"=")
     print("Currently stored accounts:")
+
     for i in range(1, account_count):
         section_name = f'account{i}'
         username = config[section_name]['username']
         password = config[section_name]['password']
 
-        print(f"Account {i}: {username} - {password}")
+        print(f"{i}. {username}")
+    print(40*"=")
 
 def wait_for_window(window_title, timeout=60):
     start_time = time.time()
@@ -145,14 +186,23 @@ def wait_for_window(window_title, timeout=60):
         time.sleep(1)
     return False
 
+# Function to clear the console
+def clear_console():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
 # Main loop
 while True:
+    if loop == 0:
+        print("How may I help you today? :D")
+    else:
+        print("What can I do for you next? :D")
     print("1. Launch Account")
     print("2. Add Account")
     print("3. View Stored Accounts")
     print("0. Exit")
     
     choice = input("Enter your choice: ")
+    loop +=1
     
     if choice == '1':
         launch_account()
@@ -163,4 +213,7 @@ while True:
     elif choice == '0':
         break
     else:
+        clear_console()
+        print(40*"=")
         print("Invalid choice. Please try again.")
+        print(40*"=")
