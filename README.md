@@ -4,7 +4,7 @@ Valouncher is a script that allows you to launch and manage multiple accounts fo
 
 ## Prerequisites
 
-Before using Valouncher, ensure that you have the following software installed on your system:
+Before using Valouncher, ensure that you have the following software/packages installed on your system:
 
 - Python 3
 - pywinauto
