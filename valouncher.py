@@ -61,7 +61,7 @@ def launch_account():
         return
 
     print("Stored accounts:")
-    for i in range(1, account_count):  # Include the account_count in the range
+    for i in range(1, account_count):
         section_name = f'account{i}'
         username = config[section_name]['username']
         password = config[section_name]['password']
@@ -78,33 +78,9 @@ def launch_account():
             username = config[section_name]['username']
             password = config[section_name]['password']
             print(f"Launching Account {account_choice}: {username} - {password}")
-            # Launch Valorant using the selected account credentials
+
             # Launch RiotClientServices.exe
             subprocess.Popen(r'C:\Riot Games\Riot Client\RiotClientServices.exe')
-
-            # Wait for the program to start and retrieve its output
-            process = subprocess.Popen('TASKLIST /FI "imagename eq RiotClientServices.exe"', stdout=subprocess.PIPE)
-            output, _ = process.communicate()
-
-            # Extract the process ID (PID) from the output
-            pid_match = re.search(r'RiotClientServices.exe\s+(\d+)', output.decode('utf-8'))
-            if pid_match:
-                pid = int(pid_match.group(1))
-            else:
-                print("Failed to retrieve RiotClientServices.exe PID.")
-                exit(1)
-
-            # Get the process information using WMIC
-            wmic_output = subprocess.check_output(['WMIC', 'PROCESS', 'WHERE', f'ProcessId={pid}', 'GET', 'CommandLine'])
-            wmic_output = wmic_output.decode('utf-8').strip()
-
-            # Extract the command line from the WMIC output
-            command_line_match = re.search(r'CommandLine\s+(.+)', wmic_output)
-            if command_line_match:
-                command_line = command_line_match.group(1)
-            else:
-                print("Failed to retrieve RiotClientServices.exe command line.")
-                exit(1)
 
             # Detecting Riot Client Main window
             if wait_for_window("Riot Client Main"):
