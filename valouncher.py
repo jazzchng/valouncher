@@ -11,8 +11,27 @@ from pywinauto import Desktop
 import sys
 import ctypes
 
+# Specify the full path to the file
+file_path = r'C:\Users\Jazz\AppData\Local\Riot Games\Riot Client\Data\RiotGamesPrivateSettings.yaml'
+
+# Check if file exists and delete it
+if os.path.exists(file_path):
+    os.remove(file_path)
+
+# Check if process is running and terminate it
+process_name = 'VALORANT-WIN64-SHIPPING.exe'
+output = subprocess.run(['tasklist', '/FI', f'imagename eq {process_name}'], capture_output=True, text=True)
+if ':' not in output.stdout:
+    subprocess.run(['taskkill', '/F', '/IM', process_name])
+
+# Check if process is running and terminate it
+process_name = 'RiotClientServices.exe'
+output = subprocess.run(['tasklist', '/FI', f'imagename eq {process_name}'], capture_output=True, text=True)
+if ':' not in output.stdout:
+    subprocess.run(['taskkill', '/F', '/IM', process_name])
+
 # Set the root directory path
-root_directory = os.path.dirname(os.path.abspath(__file__))
+root_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
 loop = 0
 
 print(120*"=")
@@ -35,14 +54,6 @@ Open source on GitHub: https://github.com/jazzchng/valouncher/
 
 print(header)
 print(120*"=")
-# Functions
-def create_config_file():
-    config = configparser.ConfigParser()
-    config.add_section('accounts')
-
-    config_file_path = os.path.join(root_directory, 'accounts.cfg')
-    with open(config_file_path, 'w') as config_file:
-        config.write(config_file)
 
 def store_account():
     config_file_path = os.path.join(root_directory, 'accounts.cfg')
@@ -87,14 +98,17 @@ def launch_account():
         print("No accounts found. Please add an account.")
         print(40*"=")
         return
-
+    
+    clear_console()
+    print(40*"=")
     print("Stored accounts:")
     for i in range(1, account_count):
         section_name = f'account{i}'
         username = config[section_name]['username']
         password = config[section_name]['password']
 
-        print(f"{i}. {username} - {password}")
+        print(f"{i}. {username}")
+    print(40*"=")
 
     account_choice = input("Enter the account number to launch (or '0' to go back): ")
     try:
@@ -105,7 +119,7 @@ def launch_account():
             section_name = f'account{account_choice}'
             username = config[section_name]['username']
             password = config[section_name]['password']
-            print(f"Launching Account {account_choice}: {username} - {password}")
+            print(f"Launching Account: {username}")
 
             # Launch RiotClientServices.exe
             subprocess.Popen(r'C:\Riot Games\Riot Client\RiotClientServices.exe')
@@ -209,6 +223,14 @@ def set_console_window_size(width, height):
         ctypes.windll.kernel32.SetWindowPos(console_handle, 0, 0, 0, width, height, 0x0002 | 0x0040)
     except Exception as e:
         print('An error occurred while setting the console window size:', str(e))
+
+def create_config_file():
+    config = configparser.ConfigParser()
+    config.add_section('accounts')
+
+    config_file_path = os.path.join(root_directory, 'accounts.cfg')
+    with open(config_file_path, 'w') as config_file:
+        config.write(config_file)
 
 # Main loop
 while True:
