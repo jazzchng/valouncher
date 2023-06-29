@@ -10,6 +10,17 @@ import pywinauto
 from pywinauto import Desktop
 import sys
 import ctypes
+import requests
+
+# Set the root directory path
+root_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
+loop = 0
+
+# Load accounts.cfg
+config_file_path = os.path.join(root_directory, 'accounts.cfg')
+
+config = configparser.ConfigParser()
+config.read(config_file_path)
 
 # Specify the full path to the file
 file_path = r'C:\Users\Jazz\AppData\Local\Riot Games\Riot Client\Data\RiotGamesPrivateSettings.yaml'
@@ -30,14 +41,10 @@ output = subprocess.run(['tasklist', '/FI', f'imagename eq {process_name}'], cap
 if ':' not in output.stdout:
     subprocess.run(['taskkill', '/F', '/IM', process_name])
 
-# Set the root directory path
-root_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
-loop = 0
-
 print(120*"=")
 header = '''
 Welcome to Valouncher!
-Version: 1.0
+Version: 1.1
 By Jazz Chng
 
 ==========
@@ -49,68 +56,14 @@ I will not be held liable for any account lost with the usage of valouncher.
 Always use 2FA on your account! :D
 
 Open source on GitHub: https://github.com/jazzchng/valouncher/
-
 '''
 
 print(header)
 print(120*"=")
 
-def store_account():
-    config_file_path = os.path.join(root_directory, 'accounts.cfg')
-
-    if not os.path.isfile(config_file_path):
-        create_config_file()
-
-    config = configparser.ConfigParser()
-    config.read(config_file_path)
-    
-    username = input("Enter username: ")
-    password = input("Enter password: ")
-    
-    section_name = f'account{len(config.sections())}'
-    config[section_name] = {'username': username, 'password': password}
-    
-    with open(config_file_path, 'w') as config_file:
-        config.write(config_file)
-    
-    clear_console()
-    print(40*"=")
-    print("Account stored successfully!")
-    print(40*"=")
-
 def launch_account():
-    config_file_path = os.path.join(root_directory, 'accounts.cfg')
-
-    if not os.path.isfile(config_file_path):
-        clear_console()
-        print(40*"=")
-        print("No accounts found. Please add an account.")
-        print(40*"=")
-        return
-
-    config = configparser.ConfigParser()
-    config.read(config_file_path)
-
-    account_count = len(config.sections())
-    if account_count == 0:
-        clear_console()
-        print(40*"=")
-        print("No accounts found. Please add an account.")
-        print(40*"=")
-        return
-    
-    clear_console()
-    print(40*"=")
-    print("Stored accounts:")
-    for i in range(1, account_count):
-        section_name = f'account{i}'
-        username = config[section_name]['username']
-        password = config[section_name]['password']
-
-        print(f"{i}. {username}")
-    print(40*"=")
-
-    account_choice = input("Enter the account number to launch (or '0' to go back): ")
+    account_count = list_accounts()
+    account_choice = input("Enter the account number you wish to launch (0 to go back): ")
     try:
         account_choice = int(account_choice)
         if account_choice == 0:
@@ -168,38 +121,165 @@ def launch_account():
         print("Invalid input. Please enter a number.")
         print(40*"=")
 
-def view_accounts():
-    config_file_path = os.path.join(root_directory, 'accounts.cfg')
-
+def add_account():
     if not os.path.isfile(config_file_path):
+        create_config_file()
+
+    section_name = f'account{len(config.sections()) + 1}'
+    insert_cfg(section_name)
+
+    clear_console()
+    print(40 * "=")
+    print("Account stored successfully!")
+    print(40 * "=")
+
+def edit_account():
+    list_accounts()
+    account_choice = int(input("Enter the account you wish to edit (0 to go back): "))
+    section_name = f"account{account_choice}"
+
+    if account_choice == 0:
         clear_console()
-        print(40*"=")
-        print("No accounts found.")
-        print(40*"=")
         return
 
-    config = configparser.ConfigParser()
-    config.read(config_file_path)
+    
+    if section_name not in config.sections():
+        clear_console()
+        print(40 * "=")
+        print(f"Account with index {account_choice} does not exist.")
+        print(40 * "=")
+        return
+
+    account_data = config[section_name]
+    username = account_data.get('username')
+
+    print(f"Editing Account - {section_name[7:]}. {username}")
+
+    insert_cfg(section_name)
+
+    clear_console()
+    print(40 * "=")
+    print("Account updated successfully!")
+    print(40 * "=")
+
+def insert_cfg(section_name):
+    while True:
+        username = input("Enter username: ")
+        if re.match("^[a-zA-Z0-9]+$", username):
+            break
+        else:
+            print("Username can only contain letters and numbers. Please try again.")
+
+    while True:
+        password = input("Enter password: ")
+        if password:
+            break
+        else:
+            print("Password is mandatory. Please try again.")
+
+    while True:
+        player_name_tag = input("Enter account PlayerName#Tag (optional): ")
+        if not player_name_tag:
+            player_name = ''
+            player_tag = ''
+            break
+        match = re.match(r"(\w+)#(\d+)", player_name_tag)
+        if match:
+            player_name = match.group(1)
+            player_tag = match.group(2)
+            break
+        else:
+            print("Invalid player name and tag format! Please try again. (Include the tag '#')")
+
+    account_description = input("Enter account description (optional): ")
+
+    config[section_name] = {
+        'username': username,
+        'password': password,
+        'player_name': player_name,
+        'player_tag': player_tag,
+        'currenttier': '',
+        'currenttierpatched': '',
+        'ranking_in_tier': '',
+        'mmr_change_to_last_game': '',
+        'elo': ''
+    }
+
+    if account_description:
+        config[section_name]['account_description'] = account_description
+
+    create_config_file()
+
+def view_accounts():
+    account_count = list_accounts()
+    while True:
+        account_choice = input("Enter the account number you wish to view details (0 to go back): ")
+        if account_choice == '0':
+            clear_console()
+            return
+        elif account_choice.isdigit():
+            account_choice = int(account_choice)
+            if 1 <= account_choice <= account_count:
+                section_name = f"account{account_choice}"
+                account_data = config[section_name]
+                clear_console()
+                print(40 * "=")
+                print(f"Account Details - {section_name[7:]}. {account_data.get('username', '')}")
+                print(40 * "=")
+                print(f"IGN: {account_data.get('player_name', '')}#{account_data.get('player_tag', '')}")
+                print(f"Current Rank: {account_data.get('currenttierpatched', '')}")
+                print(f"RR: {account_data.get('ranking_in_tier', '')}")
+                print(f"RR From Last Game: {account_data.get('mmr_change_to_last_game', '')}")
+                print(f"Elo: {account_data.get('elo', '')}")
+                print(f"Current Tier: {account_data.get('currenttier', '')}")
+                print(f"Account Description: {account_data.get('account_description', '')}")
+                return
+        clear_console()
+        print(40 * "=")
+        print("Invalid choice. Please try again.")
+        print(40 * "=")
+
+def list_accounts():
+    if not os.path.isfile(config_file_path):
+        clear_console()
+        print(40 * "=")
+        print("No accounts found.")
+        print(40 * "=")
+        return 0, None, None  # Return default values if no accounts found
 
     account_count = len(config.sections())
     if account_count == 0:
         clear_console()
-        print(40*"=")
+        print(40 * "=")
         print("No accounts found.")
-        print(40*"=")
-        return
+        print(40 * "=")
+        return 0, None, None  # Return default values if no accounts found
 
     clear_console()
-    print(40*"=")
-    print("Currently stored accounts:")
+    print(40 * "=")
+    print("Select account:")
 
-    for i in range(1, account_count):
-        section_name = f'account{i}'
-        username = config[section_name]['username']
-        password = config[section_name]['password']
+    # List all accounts
+    for i, section_name in enumerate(config.sections(), start=1):
+        account_data = config[section_name]
+        username = account_data.get('username')
+        ign = f"{account_data.get('player_name')}#{account_data.get('player_tag')}"
+        rank = account_data.get('currenttierpatched')
+        rr = account_data.get('ranking_in_tier')
+        if rank == '':
+            printrank = '[NO RANK STORED]'
+        else:
+            printrank = f"[{rank} ({rr}/100)]"
+        
+        if username is not None:
+            if ign == '#':
+                print(f"{i}. {username}")
+            else:
+                print(f"{i}. {username} ({ign}) - [{printrank}]")
 
-        print(f"{i}. {username}")
-    print(40*"=")
+    print("0. Go back to the main menu")
+    print(40 * "=")
+    return account_count
 
 def wait_for_window(window_title, timeout=60):
     start_time = time.time()
@@ -225,12 +305,48 @@ def set_console_window_size(width, height):
         print('An error occurred while setting the console window size:', str(e))
 
 def create_config_file():
-    config = configparser.ConfigParser()
-    config.add_section('accounts')
-
-    config_file_path = os.path.join(root_directory, 'accounts.cfg')
     with open(config_file_path, 'w') as config_file:
         config.write(config_file)
+
+def fetch_account_details():
+    api_base_url = 'https://api.henrikdev.xyz/valorant/v1/mmr/ap/'
+    
+    # List all accounts
+    for i, section_name in enumerate(config.sections(), start=0):
+        account_data = config[section_name]
+        username = account_data.get('username')
+        player_name = account_data.get('player_name')
+        player_tag = account_data.get('player_tag')
+
+        if not player_name or not player_tag:
+            print(f"No IGN stored, skipping account: {username}")
+            continue
+
+        api_url = f'{api_base_url}{player_name}/{player_tag}'
+
+        try:
+            print(f"Fetching Stats for account: {username}")
+            print(f"IGN: {player_name}#{player_tag}")
+            response = requests.get(api_url)
+            response.raise_for_status()  # Check for any errors in the response
+
+            # Parse the API response and retrieve the player information
+            player_info = response.json()['data']
+
+            # Update the configuration with the player information
+            config[section_name]['currenttier'] = str(player_info.get('currenttier', ''))
+            config[section_name]['currenttierpatched'] = player_info.get('currenttierpatched', '')
+            config[section_name]['ranking_in_tier'] = str(player_info.get('ranking_in_tier', ''))
+            config[section_name]['mmr_change_to_last_game'] = str(player_info.get('mmr_change_to_last_game', ''))
+            config[section_name]['elo'] = str(player_info.get('elo', ''))
+
+            create_config_file()
+
+            print(f"Player information for {player_name}#{player_tag} (Account: {username}) retrieved and stored successfully!")
+        except requests.exceptions.RequestException as e:
+            print(f"Failed to retrieve player information for {player_name}#{player_tag} (Account: {username}):", str(e))
+    
+    print("Account details fetched for all stored accounts.")
 
 # Main loop
 while True:
@@ -239,21 +355,29 @@ while True:
         print("How may I help you today? :D")
         print(40*"=")
     else:
+        print(40*"=")
         print("What can I do for you next? :D")
+        print(40*"=")
     print("1. Launch Account")
     print("2. Add Account")
-    print("3. View Stored Accounts")
+    print("3. Edit Account")
+    print("4. View Stored Accounts")
+    print("5. Fetch Account Details")
     print("0. Exit")
     
     choice = input("Enter your choice: ")
-    loop +=1
+    loop += 1
     
     if choice == '1':
         launch_account()
     elif choice == '2':
-        store_account()
+        add_account()
     elif choice == '3':
+        edit_account()
+    elif choice == '4':
         view_accounts()
+    elif choice == '5':
+        fetch_account_details()
     elif choice == '0':
         break
     else:
