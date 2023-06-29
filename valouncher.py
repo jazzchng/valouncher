@@ -1,16 +1,17 @@
-import os
 import configparser
-import subprocess
+import ctypes
+import getpass
+import os
 import re
+import requests
+import subprocess
+import sys
 import time
-import win32gui
-import win32con
+from pywinauto import Desktop
 import pyautogui
 import pywinauto
-from pywinauto import Desktop
-import sys
-import ctypes
-import requests
+import win32con
+import win32gui
 
 # Set the root directory path
 root_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
@@ -22,8 +23,13 @@ config_file_path = os.path.join(root_directory, 'accounts.cfg')
 config = configparser.ConfigParser()
 config.read(config_file_path)
 
-# Specify the full path to the file
-file_path = r'C:\Users\Jazz\AppData\Local\Riot Games\Riot Client\Data\RiotGamesPrivateSettings.yaml'
+riot_path = r'C:\Riot Games\Riot Client\RiotClientServices.exe --launch-product=valorant --launch-patchline=live'
+
+# Get the username
+winuser = getpass.getuser()
+
+# Create the full file path with the username
+file_path = os.path.join(rf'C:\Users\{winuser}', 'AppData\Local\Riot Games\Riot Client\Data\RiotGamesPrivateSettings.yaml')
 
 # Check if file exists and delete it
 if os.path.exists(file_path):
@@ -74,7 +80,7 @@ def launch_account():
             print(f"Launching Account: {username}")
 
             # Launch RiotClientServices.exe
-            subprocess.Popen(r'C:\Riot Games\Riot Client\RiotClientServices.exe')
+            subprocess.Popen(riot_path)
 
             # Detecting Riot Client Main window
             if wait_for_window("Riot Client Main"):
