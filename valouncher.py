@@ -42,8 +42,7 @@ if ':' not in output.stdout:
     subprocess.run(['taskkill', '/F', '/IM', process_name])
 
 print(120*"=")
-header = '''
-Welcome to Valouncher!
+header = '''Welcome to Valouncher!
 Version: 1.1
 By Jazz Chng
 
