@@ -256,8 +256,9 @@ def list_accounts():
         return 0, None, None  # Return default values if no accounts found
 
     clear_console()
-    print(40 * "=")
+    print(120 * "=")
     print("Select account:")
+    print(120 * "=")
 
     # List all accounts
     for i, section_name in enumerate(config.sections(), start=1):
@@ -278,7 +279,7 @@ def list_accounts():
                 print(f"{i}. {username} ({ign}) - [{printrank}]")
 
     print("0. Go back to the main menu")
-    print(40 * "=")
+    print(120 * "=")
     return account_count
 
 def wait_for_window(window_title, timeout=60):
