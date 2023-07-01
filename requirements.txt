@@ -1,0 +1,9 @@
+codecs
+configparser
+ctypes
+getpass
+pyautogui
+pywinauto
+requests
+tabulate
+tqdm
