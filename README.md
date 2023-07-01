@@ -25,3 +25,8 @@ Before using Valouncher, ensure that you have the following software/packages in
 
    ```bash
    python valouncher.py
+
+## Credits
+
+Credits to Henrik-3 for sharing a Valorant API with us!
+https://github.com/Henrik-3/unofficial-valorant-api
