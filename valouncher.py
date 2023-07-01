@@ -12,6 +12,9 @@ import pyautogui
 import pywinauto
 import win32con
 import win32gui
+import codecs
+from tabulate import tabulate
+from tqdm import tqdm
 
 # Set the root directory path
 root_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
@@ -19,9 +22,22 @@ loop = 0
 
 # Load accounts.cfg
 config_file_path = os.path.join(root_directory, 'accounts.cfg')
-
 config = configparser.ConfigParser()
-config.read(config_file_path)
+
+# Create the config file with UTF-8 encoding
+def create_config_file():
+    with open(config_file_path, 'w', encoding='utf-8') as config_file:
+        config.write(config_file)
+
+# Open the config file with UTF-8 encoding
+def read_config_file():
+    with codecs.open(config_file_path, 'r', encoding='utf-8') as config_file:
+        config.read_file(config_file)
+
+if not os.path.isfile(config_file_path):
+    create_config_file()
+else:
+    read_config_file()
 
 riot_path = r'C:\Riot Games\Riot Client\RiotClientServices.exe --launch-product=valorant --launch-patchline=live'
 
@@ -49,7 +65,7 @@ if ':' not in output.stdout:
 
 print(120*"=")
 header = '''Welcome to Valouncher!
-Version: 1.1
+Version: 1.2
 By Jazz Chng
 
 ==========
@@ -127,9 +143,6 @@ def launch_account():
         print(40*"=")
 
 def add_account():
-    if not os.path.isfile(config_file_path):
-        create_config_file()
-
     section_name = f'account{len(config.sections()) + 1}'
     insert_cfg(section_name)
 
@@ -231,12 +244,12 @@ def view_accounts():
                 print(40 * "=")
                 print(f"Account Details - {section_name[7:]}. {account_data.get('username', '')}")
                 print(40 * "=")
-                print(f"IGN: {account_data.get('player_name', '')}#{account_data.get('player_tag', '')}")
-                print(f"Current Rank: {account_data.get('currenttierpatched', '')}")
-                print(f"RR: {account_data.get('ranking_in_tier', '')}")
-                print(f"RR From Last Game: {account_data.get('mmr_change_to_last_game', '')}")
-                print(f"Elo: {account_data.get('elo', '')}")
-                print(f"Current Tier: {account_data.get('currenttier', '')}")
+                print(f"                IGN: {account_data.get('player_name', '')}#{account_data.get('player_tag', '')}")
+                print(f"       Current Rank: {account_data.get('currenttierpatched', '')}")
+                print(f"                 RR: {account_data.get('ranking_in_tier', '')}")
+                print(f"  RR From Last Game: {account_data.get('mmr_change_to_last_game', '')}")
+                print(f"                Elo: {account_data.get('elo', '')}")
+                print(f"       Current Tier: {account_data.get('currenttier', '')}")
                 print(f"Account Description: {account_data.get('account_description', '')}")
                 return
         clear_console()
@@ -245,6 +258,7 @@ def view_accounts():
         print(40 * "=")
 
 def list_accounts():
+    read_config_file()
     if not os.path.isfile(config_file_path):
         clear_console()
         print(40 * "=")
@@ -260,31 +274,35 @@ def list_accounts():
         print(40 * "=")
         return 0, None, None  # Return default values if no accounts found
 
+    table_data = []
+    for i, section_name in enumerate(config.sections(), start=1):
+        account_data = config[section_name]
+        username = account_data['username']
+        ign = f"{account_data['player_name']}#{account_data['player_tag']}"
+        rank = account_data['currenttierpatched']
+        rr = account_data['ranking_in_tier']
+        if rank == '':
+            printrank = 'NO RANK STORED'
+        else:
+            printrank = f"{rank} ({rr}/100)"
+        
+        if username is not None:
+            if ign == '#':
+                table_data.append([i, username])
+            else:
+                table_data.append([i, username, ign, printrank])
+
+    table_headers = ["#", "Account", "IGN#TAG", "Rank (RR)    "]
+    table = tabulate(table_data, headers=table_headers, tablefmt="fancy_grid", colalign=("right", "center", "center", "right"))
+    
     clear_console()
     print(120 * "=")
     print("Select account:")
     print(120 * "=")
-
-    # List all accounts
-    for i, section_name in enumerate(config.sections(), start=1):
-        account_data = config[section_name]
-        username = account_data.get('username')
-        ign = f"{account_data.get('player_name')}#{account_data.get('player_tag')}"
-        rank = account_data.get('currenttierpatched')
-        rr = account_data.get('ranking_in_tier')
-        if rank == '':
-            printrank = '[NO RANK STORED]'
-        else:
-            printrank = f"[{rank} ({rr}/100)]"
-        
-        if username is not None:
-            if ign == '#':
-                print(f"{i}. {username}")
-            else:
-                print(f"{i}. {username} ({ign}) - [{printrank}]")
-
+    print(table)
     print("0. Go back to the main menu")
     print(120 * "=")
+    
     return account_count
 
 def wait_for_window(window_title, timeout=60):
@@ -295,64 +313,59 @@ def wait_for_window(window_title, timeout=60):
         time.sleep(1)
     return False
 
-# Function to clear the console
 def clear_console():
     os.system('cls' if os.name == 'nt' else 'clear')
 
-# Set the console window size
-def set_console_window_size(width, height):
-    try:
-        # Get the handle of the console window
-        console_handle = ctypes.windll.kernel32.GetConsoleWindow()
-
-        # Set the console window size
-        ctypes.windll.kernel32.SetWindowPos(console_handle, 0, 0, 0, width, height, 0x0002 | 0x0040)
-    except Exception as e:
-        print('An error occurred while setting the console window size:', str(e))
-
-def create_config_file():
-    with open(config_file_path, 'w') as config_file:
-        config.write(config_file)
-
 def fetch_account_details():
     api_base_url = 'https://api.henrikdev.xyz/valorant/v1/mmr/ap/'
-    
-    # List all accounts
-    for i, section_name in enumerate(config.sections(), start=0):
-        account_data = config[section_name]
-        username = account_data.get('username')
-        player_name = account_data.get('player_name')
-        player_tag = account_data.get('player_tag')
 
-        if not player_name or not player_tag:
-            print(f"No IGN stored, skipping account: {username}")
-            continue
+    # Get the total number of accounts
+    total_accounts = len(config.sections())
 
-        api_url = f'{api_base_url}{player_name}/{player_tag}'
+    # Use tqdm to create a progress bar
+    with tqdm(total=total_accounts, ncols=100) as pbar:
+        # List all accounts
+        for i, section_name in enumerate(config.sections(), start=1):
+            account_data = config[section_name]
+            username = account_data['username']
+            player_name = account_data['player_name']
+            player_tag = account_data['player_tag']
 
-        try:
-            print(f"Fetching Stats for account: {username}")
-            print(f"IGN: {player_name}#{player_tag}")
-            response = requests.get(api_url)
-            response.raise_for_status()  # Check for any errors in the response
+            if not player_name or not player_tag:
+                tqdm.write(f"No   IGN   Stored  for {i}. Skipping account: {username}")
+                pbar.update(1)  # Update the progress bar
+                continue
 
-            # Parse the API response and retrieve the player information
-            player_info = response.json()['data']
+            # Encode the player name and tag for the API request
+            encoded_player_name = requests.utils.quote(player_name)
+            encoded_player_tag = requests.utils.quote(player_tag)
+            api_url = f'{api_base_url}{encoded_player_name}/{encoded_player_tag}'
 
-            # Update the configuration with the player information
-            config[section_name]['currenttier'] = str(player_info.get('currenttier', ''))
-            config[section_name]['currenttierpatched'] = player_info.get('currenttierpatched', '')
-            config[section_name]['ranking_in_tier'] = str(player_info.get('ranking_in_tier', ''))
-            config[section_name]['mmr_change_to_last_game'] = str(player_info.get('mmr_change_to_last_game', ''))
-            config[section_name]['elo'] = str(player_info.get('elo', ''))
+            try:
+                response = requests.get(api_url)
+                response.raise_for_status()  # Check for any errors in the response
 
-            create_config_file()
+                # Parse the API response and retrieve the player information
+                player_info = response.json()['data']
 
-            print(f"Player information for {player_name}#{player_tag} (Account: {username}) retrieved and stored successfully!")
-        except requests.exceptions.RequestException as e:
-            print(f"Failed to retrieve player information for {player_name}#{player_tag} (Account: {username}):", str(e))
-    
-    print("Account details fetched for all stored accounts.")
+                # Update the configuration with the player information
+                config[section_name]['currenttier'] = str(player_info.get('currenttier', ''))
+                config[section_name]['currenttierpatched'] = player_info.get('currenttierpatched', '')
+                config[section_name]['ranking_in_tier'] = str(player_info.get('ranking_in_tier', ''))
+                config[section_name]['mmr_change_to_last_game'] = str(player_info.get('mmr_change_to_last_game', ''))
+                config[section_name]['elo'] = str(player_info.get('elo', ''))
+
+                create_config_file()
+
+                tqdm.write(f"Player information for {i}. {player_name}#{player_tag} (Account: {username}) retrieved and stored successfully!")
+            except requests.exceptions.RequestException as e:
+                tqdm.write(f"Failed to retrieve player information for {player_name}#{player_tag} (Account: {username}): {str(e)}")
+
+            pbar.update(1)  # Update the progress bar
+
+        tqdm.write(120 * "=")
+        tqdm.write("Account details fetched for all stored accounts.")
+        tqdm.write(120 * "=")
 
 # Main loop
 while True:
@@ -371,7 +384,9 @@ while True:
     print("5. Fetch Account Details")
     print("0. Exit")
     
+    read_config_file()
     choice = input("Enter your choice: ")
+    
     loop += 1
     
     if choice == '1':
