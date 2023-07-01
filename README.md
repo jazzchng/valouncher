@@ -1,6 +1,7 @@
 # Valouncher
 
-Valouncher is a script that allows you to launch and manage multiple accounts for the game Valorant. It provides a simple command-line interface to add, view, and launch accounts with your respective stored credentials :)
+Valouncher is a script that allows you to manage and launch multiple accounts for the game Valorant.
+It provides a simple command-line interface to add, edit, view, update rank information and launch accounts :)
 
 ## Prerequisites
 
