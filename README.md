@@ -32,6 +32,17 @@ pip install -r requirements.txt
    ```bash
    python valouncher.py
 
+## Why is 5.Fetch Account Details not working for me?
+
+I have set by default for APAC region.
+Please change "/ap/" to "/{your region}/"
+your region can be any of these: NA/LATAM/BR/EU/KR/AP
+```
+LINE 323
+def fetch_account_details():
+    api_base_url = 'https://api.henrikdev.xyz/valorant/v1/mmr/ap/'
+```
+
 ## Credits
 
 Credits to Henrik-3 for sharing a Valorant API with us!
