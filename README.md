@@ -13,6 +13,11 @@ Before using Valouncher, ensure that you have the following software/packages in
 - win32gui
 - win32con
 
+Or run to ensure that all required packages are installed:
+```
+pip install -r requirements.txt
+```
+
 ## Installation
 
 1. Clone this repository to your local machine or download the source code.
