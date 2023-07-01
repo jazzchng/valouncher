@@ -36,7 +36,7 @@ pip install -r requirements.txt
 
 I have set by default for APAC region.
 Please change "/ap/" to "/{your region}/"
-your region can be any of these: NA/LATAM/BR/EU/KR/AP
+your region can be any of these: na/latam/br/eu/kr/ap
 ```
 LINE 323
 def fetch_account_details():
