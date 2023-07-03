@@ -62,4 +62,3 @@ api_base_url = 'https://api.henrikdev.xyz/valorant/v1/mmr/{YOUR_REGION}/'
 ## Credits
 
 Credits to [Henrik-3](https://github.com/Henrik-3/unofficial-valorant-api) for sharing a Valorant API with us!
-https://github.com/Henrik-3/unofficial-valorant-api
