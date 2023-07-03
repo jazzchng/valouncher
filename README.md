@@ -1,11 +1,21 @@
 # Valouncher
 
 Valouncher is a script that allows you to manage and launch multiple accounts for the game Valorant.
-It provides a simple command-line interface to add, edit, view, update rank information and launch accounts :)
+It provides a simple command-line interface(v1)/GUI(v2) to add, edit, view, update rank information and launch accounts :)
 
-## Prerequisites
+## v2 Prerequisites
 
-Before using Valouncher, ensure that you have the following software/packages installed on your system:
+Before using Valouncher v2, ensure that you have the following software/packages installed on your system:
+
+- Python 3.x
+- tkinter
+- pyautogui
+- requests
+- pywinauto
+
+## v1 Prerequisites
+
+Before using Valouncher v1, ensure that you have the following software/packages installed on your system:
 
 - Python 3
 - pywinauto
@@ -43,7 +53,24 @@ def fetch_account_details():
     api_base_url = 'https://api.henrikdev.xyz/valorant/v1/mmr/ap/'
 ```
 
+## WHY IS FETCH NOT WORKING FOR ME?
+
+This feature is only currently supported in ap region for now, if you wish to use it on other region accounts edit the fetch_account_details() function's variable api_base_url to reflect your region!
+```
+api_base_url = 'https://api.henrikdev.xyz/valorant/v1/mmr/ap/'
+```
+to 
+```
+api_base_url = 'https://api.henrikdev.xyz/valorant/v1/mmr/{YOUR_REGION}/'
+```
+
+## Future Plans
+
+- Add option to store accounts based on region(Next on my list as I love playing with different cultures so I have an EU and a NA account too!
+- Add progress bar when fetching details for accounts ;)
+- Open to suggestions :D
+
 ## Credits
 
-Credits to Henrik-3 for sharing a Valorant API with us!
+Credits to [Henrik-3](https://github.com/Henrik-3/unofficial-valorant-api) for sharing a Valorant API with us!
 https://github.com/Henrik-3/unofficial-valorant-api
