@@ -42,17 +42,6 @@ pip install -r requirements.txt
    ```bash
    python valouncher.py
 
-## Why is 5.Fetch Account Details not working for me?
-
-I have set by default for APAC region.
-Please change "/ap/" to "/{your region}/"
-your region can be any of these: na/latam/br/eu/kr/ap
-```
-LINE 323
-def fetch_account_details():
-    api_base_url = 'https://api.henrikdev.xyz/valorant/v1/mmr/ap/'
-```
-
 ## WHY IS FETCH NOT WORKING FOR ME?
 
 This feature is only currently supported in ap region for now, if you wish to use it on other region accounts edit the fetch_account_details() function's variable api_base_url to reflect your region!
